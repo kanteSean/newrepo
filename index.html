@@ -1,79 +1,410 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <title>My Landing Page</title>
-  <link rel="stylesheet" href="style.css">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="theme-color" content="#0c0a09" />
+  <meta name="description" content="Maison Lumière — a destination of fire, light and memory. Fine dining as an experience worth remembering." />
+  <title>Maison Lumière · An Experience Worth Remembering</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;1,300;1,400&family=Jost:wght@300;400;500;600&display=swap" rel="stylesheet" />
+
+  <link rel="stylesheet" href="css/style.css" />
 </head>
 <body>
-
-  <!-- HEADER SECTION -->
-  <div class="header">
-
-    <div class="profile">
-      <img src="./images/ChatGPT Image Apr 20, 2026, 01_13_41 PM copy.png" alt="Profile Image">
+  <!-- Cinematic page loader -->
+  <div class="loader" id="loader" aria-hidden="true">
+    <div class="loader__mark">
+      <span class="loader__letter">M</span>
+      <span class="loader__rule"></span>
+      <span class="loader__sub">MAISON&nbsp;LUMIÈRE</span>
     </div>
+    <div class="loader__progress"><i id="loaderBar"></i></div>
+  </div>
 
-    <div class="bio">
-      <h1> Kante</h1>
-      <p>
-        Name:<strong> MUHOOZI SEAN</strong>
-      </p>
-      
-      <p>
-       Course:<strong> BITC</strong>
-      </p>
-      <p>
-       Year:<strong> 2ND YEAR</strong>
-      </p>
+  <!-- Ambient mouse-responsive light -->
+  <div class="ambient-light" id="ambientLight" aria-hidden="true"></div>
+
+  <!-- Floating culinary particles -->
+  <div class="particles" id="particles" aria-hidden="true"></div>
+
+  <!-- Scroll progress rail -->
+  <div class="scroll-rail" aria-hidden="true"><i id="scrollRail"></i></div>
+
+  <!-- Navigation -->
+  <header class="nav" id="nav">
+    <a href="#hero" class="nav__brand" aria-label="Maison Lumière home">
+      <span class="nav__brand-mark">M</span>
+      <span class="nav__brand-text">Maison&nbsp;Lumière</span>
+    </a>
+    <nav class="nav__links" aria-label="Primary">
+      <a href="#story">Story</a>
+      <a href="#dishes">Signatures</a>
+      <a href="#chef">The Chef</a>
+      <a href="#gallery">Gallery</a>
+      <a href="#events">Events</a>
+      <a href="#visit">Visit</a>
+    </nav>
+    <a href="#reserve" class="nav__cta btn btn--ghost">Reserve</a>
+    <button class="nav__burger" id="burger" aria-label="Open menu" aria-expanded="false">
+      <span></span><span></span><span></span>
+    </button>
+  </header>
+
+  <!-- Mobile menu overlay -->
+  <div class="mobile-menu" id="mobileMenu" aria-hidden="true">
+    <nav aria-label="Mobile">
+      <a href="#story">Story</a>
+      <a href="#dishes">Signatures</a>
+      <a href="#chef">The Chef</a>
+      <a href="#gallery">Gallery</a>
+      <a href="#testimonials">Voices</a>
+      <a href="#events">Events</a>
+      <a href="#visit">Visit</a>
+      <a href="#reserve" class="btn btn--solid">Reserve a Table</a>
+    </nav>
+  </div>
+
+  <main id="main">
+    <!-- 1 · HERO -->
+    <section class="hero" id="hero">
+      <div class="hero__media">
+        <video class="hero__video" id="heroVideo" autoplay muted loop playsinline
+          poster="https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?auto=format&fit=crop&w=1920&q=80">
+        </video>
+        <div class="hero__media-fallback" aria-hidden="true"></div>
+        <div class="hero__grain"></div>
+        <div class="hero__vignette"></div>
+      </div>
+
+      <div class="hero__content">
+        <p class="hero__eyebrow reveal-line"><span>Est. MMXII · A Destination, Not A Place To Eat</span></p>
+        <h1 class="hero__title">
+          <span class="reveal-line"><span>More Than A Meal.</span></span>
+          <span class="reveal-line"><span class="italic gold">An Experience</span></span>
+          <span class="reveal-line"><span>Worth Remembering.</span></span>
+        </h1>
+        <p class="hero__lede reveal-line"><span>Where fire, light and memory are plated nightly in the heart of the old quarter.</span></p>
+        <div class="hero__actions reveal-line">
+          <a href="#reserve" class="btn btn--solid">Reserve a Table</a>
+          <a href="#dishes" class="btn btn--ghost">Explore the Menu</a>
+        </div>
+      </div>
+
+      <a href="#story" class="hero__scroll" aria-label="Scroll to story">
+        <span>Scroll</span>
+        <i></i>
+      </a>
+    </section>
+
+    <!-- 2 · STORY -->
+    <section class="story" id="story">
+      <div class="section-head">
+        <span class="section-head__num">01</span>
+        <span class="section-head__label">The Story</span>
+      </div>
+      <div class="story__grid">
+        <div class="story__text">
+          <h2 class="display reveal">A house built on <em class="italic gold">light</em>.</h2>
+          <p class="reveal">Maison Lumière began as a single candle in a forgotten cellar — a chef, a flame, and the conviction that dinner could be a memory you carry for years.</p>
+          <p class="reveal">Today we sit at the centre of a restless town, yet inside time slows. Every plate is a chapter; every evening, a story told in courses.</p>
+          <div class="story__stats reveal">
+            <div><strong data-count="13">0</strong><span>Years of fire</span></div>
+            <div><strong data-count="2">0</strong><span>Michelin stars</span></div>
+            <div><strong data-count="9">0</strong><span>Course journey</span></div>
+          </div>
+        </div>
+        <figure class="story__media reveal">
+          <div class="tilt" data-tilt>
+            <img loading="lazy" src="https://images.unsplash.com/photo-1414235077428-338989a2e8c0?auto=format&fit=crop&w=1000&q=80" alt="Warm candlelit dining room" />
+          </div>
+          <figcaption>The cellar room, restored 2012</figcaption>
+        </figure>
+      </div>
+    </section>
+
+    <!-- 2b · SCROLL-DRIVEN JOURNEY: FARM TO PLATE -->
+    <section class="journey" id="journey" aria-label="From farm to plate">
+      <div class="journey__sticky">
+        <div class="journey__bg" id="journeyBg"></div>
+        <div class="journey__overlay"></div>
+        <div class="journey__caption">
+          <span class="journey__index"><b id="journeyIndex">01</b> / 04</span>
+          <h3 id="journeyTitle" class="display">From the soil</h3>
+          <p id="journeyText">Heirloom roots pulled at dawn, still cool with the earth that raised them.</p>
+        </div>
+        <div class="journey__signature" id="journeySignature" aria-hidden="true">
+          <svg viewBox="0 0 600 200" preserveAspectRatio="xMidYMid meet">
+            <path id="sigPath" d="M30,140 C70,40 110,40 130,110 C150,180 180,180 200,110 C220,40 250,40 270,120 C290,180 320,150 345,90 C370,30 410,60 430,120 C448,170 500,150 560,70"
+              fill="none" stroke="url(#sigGrad)" stroke-width="3" stroke-linecap="round" />
+            <defs>
+              <linearGradient id="sigGrad" x1="0" y1="0" x2="1" y2="0">
+                <stop offset="0%" stop-color="#e9c27a" />
+                <stop offset="100%" stop-color="#c0703a" />
+              </linearGradient>
+            </defs>
+          </svg>
+          <span class="journey__signature-name">— Chef A. Lumière</span>
+        </div>
+      </div>
+      <div class="journey__steps">
+        <div class="journey__step" data-step="0"></div>
+        <div class="journey__step" data-step="1"></div>
+        <div class="journey__step" data-step="2"></div>
+        <div class="journey__step" data-step="3"></div>
+      </div>
+    </section>
+
+    <!-- 3 · SIGNATURE DISHES (3D showcase) -->
+    <section class="dishes" id="dishes">
+      <div class="section-head">
+        <span class="section-head__num">02</span>
+        <span class="section-head__label">Signature Dishes</span>
+      </div>
+      <div class="dishes__layout">
+        <div class="dishes__stage">
+          <div class="dishes__plate" id="dishStage" aria-hidden="true">
+            <canvas id="dishCanvas"></canvas>
+            <div class="dishes__glow"></div>
+          </div>
+        </div>
+        <div class="dishes__detail">
+          <ol class="dishes__nav" id="dishNav" aria-label="Choose a signature dish"></ol>
+          <div class="dishes__copy">
+            <span class="dishes__course" id="dishCourse">Course IV</span>
+            <h2 class="display" id="dishName">Ember Wagyu</h2>
+            <p id="dishDesc">Binchōtan-grilled wagyu, bone-marrow jus, charred allium ash and a whisper of smoked plum.</p>
+            <div class="dishes__meta">
+              <span id="dishPair">Paired · Barolo '16</span>
+              <span id="dishPrice">— 48</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 4 · MEET THE CHEF -->
+    <section class="chef" id="chef">
+      <div class="chef__portrait reveal">
+        <div class="tilt" data-tilt>
+          <img loading="lazy" src="https://images.unsplash.com/photo-1577219491135-ce391730fb2c?auto=format&fit=crop&w=900&q=80" alt="Portrait of the head chef" />
+        </div>
+        <span class="chef__glow"></span>
+      </div>
+      <div class="chef__body">
+        <div class="section-head">
+          <span class="section-head__num">03</span>
+          <span class="section-head__label">Meet The Chef</span>
+        </div>
+        <h2 class="display reveal">Antoine <em class="italic gold">Lumière</em></h2>
+        <p class="reveal">Trained between Lyon and Kyoto, Antoine cooks at the meeting point of French romance and Japanese restraint — a cuisine of intention, where nothing is loud and nothing is missing.</p>
+        <blockquote class="reveal">“I do not cook food. I cook the feeling you'll remember tomorrow.”</blockquote>
+        <div class="chef__sign reveal">
+          <svg viewBox="0 0 360 110"><path d="M14,80 C40,20 64,22 78,66 C90,104 116,100 130,60 C142,26 168,28 182,74 C193,108 224,92 240,52 C258,8 300,30 320,72 C332,96 352,84 350,60" fill="none" stroke="#e9c27a" stroke-width="2.5" stroke-linecap="round"/></svg>
+        </div>
+      </div>
+    </section>
+
+    <!-- 5 · GALLERY -->
+    <section class="gallery" id="gallery">
+      <div class="section-head">
+        <span class="section-head__num">04</span>
+        <span class="section-head__label">The Experience</span>
+      </div>
+      <h2 class="display gallery__title reveal">An evening, in <em class="italic gold">frames</em>.</h2>
+      <div class="gallery__grid">
+        <figure class="gallery__item gallery__item--tall reveal" data-parallax="0.08">
+          <img loading="lazy" src="https://images.unsplash.com/photo-1551218808-94e220e084d2?auto=format&fit=crop&w=900&q=80" alt="Plated fine dining dish" />
+          <figcaption>The first course</figcaption>
+        </figure>
+        <figure class="gallery__item reveal" data-parallax="0.14">
+          <img loading="lazy" src="https://images.unsplash.com/photo-1559339352-11d035aa65de?auto=format&fit=crop&w=900&q=80" alt="Chef plating with tweezers" />
+          <figcaption>Precision</figcaption>
+        </figure>
+        <figure class="gallery__item reveal" data-parallax="0.05">
+          <img loading="lazy" src="https://images.unsplash.com/photo-1559305616-3f99cd43e353?auto=format&fit=crop&w=900&q=80" alt="Pouring sauce over a dish" />
+          <figcaption>The pour</figcaption>
+        </figure>
+        <figure class="gallery__item gallery__item--wide reveal" data-parallax="0.1">
+          <img loading="lazy" src="https://images.unsplash.com/photo-1466978913421-dad2ebd01d17?auto=format&fit=crop&w=1200&q=80" alt="Warm restaurant interior at night" />
+          <figcaption>The room, after dusk</figcaption>
+        </figure>
+        <figure class="gallery__item reveal" data-parallax="0.16">
+          <img loading="lazy" src="https://images.unsplash.com/photo-1510626176961-4b57d4fbad03?auto=format&fit=crop&w=900&q=80" alt="Dessert with gold leaf" />
+          <figcaption>Sweet finale</figcaption>
+        </figure>
+      </div>
+    </section>
+
+    <!-- 6 · TESTIMONIALS -->
+    <section class="testimonials" id="testimonials">
+      <div class="section-head">
+        <span class="section-head__num">05</span>
+        <span class="section-head__label">Voices</span>
+      </div>
+      <div class="testimonials__viewport">
+        <div class="testimonials__track" id="testiTrack">
+          <!-- injected by JS -->
+        </div>
+      </div>
+      <div class="testimonials__dots" id="testiDots" aria-hidden="true"></div>
+    </section>
+
+    <!-- 7 · RESERVATION -->
+    <section class="reserve" id="reserve">
+      <div class="reserve__panel glass reveal">
+        <div class="section-head">
+          <span class="section-head__num">06</span>
+          <span class="section-head__label">Reservations</span>
+        </div>
+        <h2 class="display">Reserve your <em class="italic gold">evening</em>.</h2>
+        <p class="reserve__lede">Seatings are limited to forty guests a night. We recommend booking two weeks ahead.</p>
+        <form class="reserve__form" id="reserveForm" novalidate>
+          <div class="field">
+            <input type="text" id="r-name" name="name" required placeholder=" " />
+            <label for="r-name">Full name</label>
+          </div>
+          <div class="field">
+            <input type="email" id="r-email" name="email" required placeholder=" " />
+            <label for="r-email">Email</label>
+          </div>
+          <div class="field">
+            <input type="date" id="r-date" name="date" required placeholder=" " />
+            <label for="r-date">Date</label>
+          </div>
+          <div class="field">
+            <select id="r-time" name="time" required>
+              <option value="" disabled selected></option>
+              <option>18:00</option><option>18:30</option><option>19:00</option>
+              <option>19:30</option><option>20:00</option><option>20:30</option><option>21:00</option>
+            </select>
+            <label for="r-time">Time</label>
+          </div>
+          <div class="field">
+            <select id="r-guests" name="guests" required>
+              <option value="" disabled selected></option>
+              <option>1 guest</option><option>2 guests</option><option>3 guests</option>
+              <option>4 guests</option><option>5 guests</option><option>6+ guests</option>
+            </select>
+            <label for="r-guests">Guests</label>
+          </div>
+          <div class="field field--full">
+            <textarea id="r-note" name="note" rows="2" placeholder=" "></textarea>
+            <label for="r-note">Occasion or dietary notes</label>
+          </div>
+          <button type="submit" class="btn btn--solid reserve__submit">Request Reservation</button>
+          <p class="reserve__status" id="reserveStatus" role="status" aria-live="polite"></p>
+        </form>
+      </div>
+    </section>
+
+    <!-- 8 · EVENTS & PRIVATE DINING -->
+    <section class="events" id="events">
+      <div class="section-head">
+        <span class="section-head__num">07</span>
+        <span class="section-head__label">Events &amp; Private Dining</span>
+      </div>
+      <div class="events__grid">
+        <article class="events__card reveal">
+          <div class="events__img" style="--img:url('https://images.unsplash.com/photo-1530103862676-de8c9debad1d?auto=format&fit=crop&w=900&q=80')"></div>
+          <div class="events__inner">
+            <h3>The Cellar Table</h3>
+            <p>An intimate eight-seat chef's table beneath the dining room, plated an arm's length away.</p>
+            <span class="events__tag">Up to 8 · By request</span>
+          </div>
+        </article>
+        <article class="events__card reveal">
+          <div class="events__img" style="--img:url('https://images.unsplash.com/photo-1519671482749-fd09be7ccebf?auto=format&fit=crop&w=900&q=80')"></div>
+          <div class="events__inner">
+            <h3>Private Soirées</h3>
+            <p>The whole maison, yours for the night — a bespoke menu written for your occasion.</p>
+            <span class="events__tag">Up to 40 · Full buyout</span>
+          </div>
+        </article>
+        <article class="events__card reveal">
+          <div class="events__img" style="--img:url('https://images.unsplash.com/photo-1414235077428-338989a2e8c0?auto=format&fit=crop&w=900&q=80')"></div>
+          <div class="events__inner">
+            <h3>Seasonal Tastings</h3>
+            <p>Four times a year we open the kitchen for a guided journey through a new season.</p>
+            <span class="events__tag">Quarterly · Limited</span>
+          </div>
+        </article>
+      </div>
+    </section>
+
+    <!-- 9 · VISIT / LOCATION -->
+    <section class="visit" id="visit">
+      <div class="visit__info reveal">
+        <div class="section-head">
+          <span class="section-head__num">08</span>
+          <span class="section-head__label">Find Us</span>
+        </div>
+        <h2 class="display">In the heart of the <em class="italic gold">old quarter</em>.</h2>
+        <ul class="visit__list">
+          <li><span>Address</span><b>14 Rue des Lanternes, Old Quarter</b></li>
+          <li><span>Hours</span><b>Tue – Sun · 18:00 — late</b></li>
+          <li><span>Reservations</span><b>+1 (555) 018-2012</b></li>
+          <li><span>Press</span><b>hello@maisonlumiere.com</b></li>
+        </ul>
+        <a href="#reserve" class="btn btn--ghost">Plan your visit</a>
+      </div>
+      <div class="visit__map reveal" id="map" aria-label="Interactive location map">
+        <div class="visit__map-grid"></div>
+        <div class="visit__streets"></div>
+        <button class="visit__pin" id="mapPin" aria-label="Maison Lumière location">
+          <span class="visit__pin-dot"></span>
+          <span class="visit__pin-ring"></span>
+          <span class="visit__pin-label">Maison Lumière</span>
+        </button>
+        <div class="visit__compass" aria-hidden="true">N</div>
+      </div>
+    </section>
+  </main>
+
+  <!-- 10 · FOOTER -->
+  <footer class="footer" id="footer">
+    <div class="footer__glow"></div>
+    <div class="footer__top">
+      <div class="footer__brand">
+        <span class="footer__mark">M</span>
+        <h3>Maison Lumière</h3>
+        <p>An experience worth remembering.</p>
+      </div>
+      <nav class="footer__nav" aria-label="Footer">
+        <div>
+          <h4>Explore</h4>
+          <a href="#story">Story</a>
+          <a href="#dishes">Signatures</a>
+          <a href="#chef">The Chef</a>
+          <a href="#gallery">Gallery</a>
+        </div>
+        <div>
+          <h4>Visit</h4>
+          <a href="#reserve">Reservations</a>
+          <a href="#events">Private Dining</a>
+          <a href="#visit">Location</a>
+          <a href="#visit">Hours</a>
+        </div>
+        <div>
+          <h4>Connect</h4>
+          <a href="#" target="_blank" rel="noopener">Instagram</a>
+          <a href="#" target="_blank" rel="noopener">Journal</a>
+          <a href="#" target="_blank" rel="noopener">Press</a>
+          <a href="mailto:hello@maisonlumiere.com">Email</a>
+        </div>
+      </nav>
     </div>
+    <div class="footer__bottom">
+      <span>© <span id="year"></span> Maison Lumière. Crafted with fire &amp; light.</span>
+      <span>14 Rue des Lanternes · Old Quarter</span>
+    </div>
+  </footer>
 
-  </div>
-
-  <!-- EDUCATION SECTION -->
-  <div class="section">
-    <h2>Education Background</h2>
-
-    <table>
-      <tr>
-        <th>School</th>
-        <th>Year</th>
-        <th>Achievement</th>
-      </tr>
-      <tr>
-        <td>Excel Primary school</td>
-        <td>2012 - 2016</td>
-        <td>PLE Certificate</td>
-      </tr>
-      <tr>
-        <td>St lawrence SS Sonde</td>
-        <td>2017 - 2020</td>
-        <td>O-Level Certificate</td>
-      </tr>
-      <tr>
-        <td>Jovens High School</td>
-        <td>2021 - 2023</td>
-        <td>A-Level Student</td>
-      </tr>
-    </table>
-  </div>
-
-  <!-- HOBBIES SECTION -->
-  <div class="section">
-    <h2>Hobbies</h2>
-    <ul>
-      <li>Coding</li>
-      <li>Reading books</li>
-      <li>Watching tech videos</li>
-      <li>Football</li>
-    </ul>
-  </div>
-
-  <!-- SOCIAL LINKS -->
-  <div class="social">
-  <a href="https://github.com" target="_blank" rel="noopener noreferrer">GitHub</a>
-  <a href="mailto:youremail@gmail.com">Email</a>
-  <a href="https://linkedin.com" target="_blank" rel="noopener noreferrer">LinkedIn</a>
-</div>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js"></script>
+  <script src="js/main.js" defer></script>
 </body>
 </html>
