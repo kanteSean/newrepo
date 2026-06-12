@@ -1,0 +1,56 @@
+@font-face {
+  font-family: 'FontAwesome';
+  src: url('/fonts/FontAwesome.ttf') format('truetype');
+  font-weight: normal;
+  font-style: normal;
+}
+@font-face {
+  font-family: 'Font Awesome 5 Free';
+  font-style: normal;
+  font-weight: 900;
+  src: url('/fonts/fa-solid-900.woff2') format('woff2');
+}
+@font-face {
+  font-family: 'Font Awesome 5 Free';
+  font-style: normal;
+  font-weight: 400;
+  src: url('/fonts/fa-regular-400.woff2') format('woff2');
+}
+.fa,.fas,.far,.fal,.fad,.fab {
+  -moz-osx-font-smoothing: grayscale;
+  -webkit-font-smoothing: antialiased;
+  display: inline-block;
+  font-style: normal;
+  font-variant: normal;
+  text-rendering: auto;
+  line-height: 1;
+  font-family: 'Font Awesome 5 Free';
+  font-weight: 900;
+}
+.far { font-weight: 400; }
+.fa-star:before { content: "\f005"; }
+.fa-bell:before { content: "\f0f3"; }
+.fa-headset:before { content: "\f590"; }
+.fa-users:before { content: "\f0c0"; }
+.fa-wallet:before { content: "\f555"; }
+.fa-user-cog:before { content: "\f4fe"; }
+.fa-gift:before { content: "\f06b"; }
+.fa-money-check:before { content: "\f53c"; }
+.fa-handshake:before { content: "\f2b5"; }
+.fa-bahai:before { content: "\f666"; }
+.fa-angle-double-down:before { content: "\f103"; }
+.fa-angle-double-up:before { content: "\f102"; }
+.fa-angle-right:before { content: "\f105"; }
+.fa-window-close:before { content: "\f410"; }
+.fa-copy:before { content: "\f0c5"; }
+.fa-share-alt:before { content: "\f1e0"; }
+.fa-check-circle:before { content: "\f058"; }
+.fa-times:before { content: "\f00d"; }
+.fa-arrow-left:before { content: "\f060"; }
+.fa-spinner:before { content: "\f110"; }
+.fa-trophy:before { content: "\f091"; }
+.fa-crown:before { content: "\f521"; }
+.fa-medal:before { content: "\f5a2"; }
+.fa-chart-line:before { content: "\f201"; }
+.fa-coins:before { content: "\f51e"; }
+.fa-paper-plane:before { content: "\f1d8"; }
