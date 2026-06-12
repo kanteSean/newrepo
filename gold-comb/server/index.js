@@ -33,6 +33,36 @@ function saveDB(db) {
   fs.writeFileSync(DB_FILE, JSON.stringify(db, null, 2));
 }
 
+// Seed dummy user on first run
+function seedDummyUser() {
+  const db = loadDB();
+  if (db.users.find(u => u.phone === '0771234567')) return;
+  const id = db.nextId++;
+  const hash = bcrypt.hashSync('ochen2026', 10);
+  const user = {
+    id, phone: '0771234567', password: hash, name: 'Ochen Jacob',
+    wallet: 50000, balance: 0, invite_code: 'GC' + 'OCHEN1',
+    referred_by: null, referral_earnings: 0, lottery_spins: 0,
+    created_at: new Date().toISOString()
+  };
+  db.users.push(user);
+  const product = { id: 'A3', name: 'A-3 Standard Gold', series: 'A', price: 50000, daily_profit: 3500, duration: 20, total_return: 120000 };
+  const orderId = db.nextId++;
+  db.orders.push({
+    id: orderId, user_id: id, product_id: product.id, product_name: product.name,
+    series: product.series, amount: product.price, daily_profit: product.daily_profit,
+    duration_days: product.duration, total_return: product.total_return,
+    status: 'active', accumulated: 0, start_date: new Date().toISOString()
+  });
+  db.transactions.push(
+    { id: db.nextId++, user_id: id, type: 'deposit', amount: 50000, description: 'Wallet deposit', created_at: new Date().toISOString() },
+    { id: db.nextId++, user_id: id, type: 'purchase', amount: -50000, description: 'Purchased A-3 Standard Gold', created_at: new Date().toISOString() }
+  );
+  saveDB(db);
+  console.log('Seeded dummy user: Ochen Jacob (0771234567 / ochen2026)');
+}
+seedDummyUser();
+
 function getDB() { return loadDB(); }
 
 // Gold bar products
@@ -428,68 +458,6 @@ app.get('/api/admin/orders', adminAuth, (req, res) => {
     return { ...o, user_name: user ? user.name : 'Unknown', user_phone: user ? user.phone : '', days_passed: daysPassed, progress };
   }).sort((a, b) => new Date(b.start_date) - new Date(a.start_date));
   res.json({ success: true, orders });
-});
-
-// Admin: fast-forward order by X days (for testing harvest)
-app.post('/api/admin/fast-forward', adminAuth, (req, res) => {
-  const { order_id, days } = req.body;
-  if (!order_id || !days || days < 1) return res.json({ success: false, msg: 'Provide order_id and days (min 1)' });
-
-  const db = getDB();
-  const order = db.orders.find(o => o.id === order_id);
-  if (!order) return res.json({ success: false, msg: 'Order not found' });
-  if (order.status === 'completed') return res.json({ success: false, msg: 'Order already completed' });
-
-  // Move start_date back by X days to simulate time passing
-  const startMs = new Date(order.start_date).getTime();
-  const newStartMs = startMs - (days * 86400000);
-  order.start_date = new Date(newStartMs).toISOString();
-
-  // Check if order is now ready for harvest
-  const now = Date.now();
-  const daysPassed = Math.min(Math.floor((now - newStartMs) / 86400000), order.duration_days);
-  if (daysPassed >= order.duration_days && order.status === 'active') {
-    order.status = 'harvest';
-    order.accumulated = order.total_return;
-  } else {
-    order.accumulated = daysPassed * order.daily_profit;
-  }
-
-  saveDB(db);
-  const user = db.users.find(u => u.id === order.user_id);
-  res.json({ success: true, msg: `Fast-forwarded ${days} days. Order now at day ${daysPassed}/${order.duration_days}. Status: ${order.status}`, order_id, days_passed: daysPassed, status: order.status, user_name: user ? user.name : 'Unknown' });
-});
-
-// Admin: fast-forward ALL active orders by X days
-app.post('/api/admin/fast-forward-all', adminAuth, (req, res) => {
-  const { days } = req.body;
-  if (!days || days < 1) return res.json({ success: false, msg: 'Provide days (min 1)' });
-
-  const db = getDB();
-  const activeOrders = db.orders.filter(o => o.status === 'active' || o.status === 'harvest');
-  let updated = 0;
-  let readyForHarvest = 0;
-
-  for (const order of activeOrders) {
-    if (order.status === 'completed') continue;
-    const startMs = new Date(order.start_date).getTime();
-    const newStartMs = startMs - (days * 86400000);
-    order.start_date = new Date(newStartMs).toISOString();
-
-    const now = Date.now();
-    const daysPassed = Math.min(Math.floor((now - newStartMs) / 86400000), order.duration_days);
-    if (daysPassed >= order.duration_days && order.status === 'active') {
-      order.status = 'harvest';
-      order.accumulated = order.total_return;
-      readyForHarvest++;
-    } else {
-      order.accumulated = daysPassed * order.daily_profit;
-    }
-    updated++;
-  }
-
-  saveDB(db);
-  res.json({ success: true, msg: `Fast-forwarded ${updated} orders by ${days} days. ${readyForHarvest} now ready for harvest.` });
 });
 
 // Serve admin page
