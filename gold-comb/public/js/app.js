@@ -607,14 +607,15 @@
         <div style="margin-top: 30px; text-align: left;">
           <h3 style="font-size: 15px; margin-bottom: 12px;">Prize Table</h3>
           <div style="font-size: 12px; color: var(--text-secondary);">
+            <div style="display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid rgba(255,255,255,0.05);"><span>500 UGX</span><span>40%</span></div>
             <div style="display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid rgba(255,255,255,0.05);"><span>1,000 UGX</span><span>30%</span></div>
-            <div style="display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid rgba(255,255,255,0.05);"><span>2,500 UGX</span><span>25%</span></div>
-            <div style="display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid rgba(255,255,255,0.05);"><span>5,000 UGX</span><span>20%</span></div>
-            <div style="display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid rgba(255,255,255,0.05);"><span>10,000 UGX</span><span>12%</span></div>
-            <div style="display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid rgba(255,255,255,0.05);"><span>25,000 UGX</span><span>8%</span></div>
-            <div style="display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid rgba(255,255,255,0.05);"><span>50,000 UGX</span><span>3%</span></div>
-            <div style="display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid rgba(255,255,255,0.05);"><span>100,000 UGX</span><span>1.5%</span></div>
-            <div style="display: flex; justify-content: space-between; padding: 8px 0; color: var(--gold);"><span>500,000 UGX</span><span>0.5%</span></div>
+            <div style="display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid rgba(255,255,255,0.05);"><span>2,500 UGX</span><span>15%</span></div>
+            <div style="display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid rgba(255,255,255,0.05);"><span>5,000 UGX</span><span>8%</span></div>
+            <div style="display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid rgba(255,255,255,0.05);"><span>10,000 UGX</span><span>4%</span></div>
+            <div style="display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid rgba(255,255,255,0.05);"><span>25,000 UGX</span><span>1.5%</span></div>
+            <div style="display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid rgba(255,255,255,0.05);"><span>50,000 UGX</span><span>0.8%</span></div>
+            <div style="display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid rgba(255,255,255,0.05);"><span>100,000 UGX</span><span>0.15%</span></div>
+            <div style="display: flex; justify-content: space-between; padding: 8px 0; color: var(--gold);"><span>500,000 UGX</span><span>0.05%</span></div>
           </div>
         </div>
       </div>

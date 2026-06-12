@@ -45,14 +45,14 @@ const products = {
     { id: 'B3', name: 'B-3 Royal Gold', series: 'B', price: 500000, daily_profit: 40000, duration: 25, total_return: 1500000 },
   ],
   F: [
-    { id: 'F1', name: 'F-1 Fortune Gold', series: 'F', price: 1000000, daily_profit: 80000, duration: 30, total_return: 3400000 },
-    { id: 'F2', name: 'F-2 Fortune Plus', series: 'F', price: 2500000, daily_profit: 210000, duration: 30, total_return: 8800000 },
-    { id: 'F3', name: 'F-3 Fortune Max', series: 'F', price: 5000000, daily_profit: 450000, duration: 30, total_return: 18500000 },
+    { id: 'F1', name: 'F-1 Fortune Gold', series: 'F', price: 1000000, daily_profit: 80000, duration: 50, total_return: 5000000 },
+    { id: 'F2', name: 'F-2 Fortune Plus', series: 'F', price: 2500000, daily_profit: 210000, duration: 50, total_return: 13000000 },
+    { id: 'F3', name: 'F-3 Fortune Max', series: 'F', price: 5000000, daily_profit: 450000, duration: 50, total_return: 27500000 },
   ],
   Z: [
-    { id: 'Z1', name: 'Z-1 Zeus Gold', series: 'Z', price: 10000000, daily_profit: 1000000, duration: 35, total_return: 45000000 },
-    { id: 'Z2', name: 'Z-2 Zeus Premium', series: 'Z', price: 25000000, daily_profit: 2800000, duration: 35, total_return: 123000000 },
-    { id: 'Z3', name: 'Z-3 Zeus Ultimate', series: 'Z', price: 50000000, daily_profit: 6000000, duration: 35, total_return: 260000000 },
+    { id: 'Z1', name: 'Z-1 Zeus Gold', series: 'Z', price: 10000000, daily_profit: 1000000, duration: 75, total_return: 85000000 },
+    { id: 'Z2', name: 'Z-2 Zeus Premium', series: 'Z', price: 25000000, daily_profit: 2800000, duration: 75, total_return: 235000000 },
+    { id: 'Z3', name: 'Z-3 Zeus Ultimate', series: 'Z', price: 50000000, daily_profit: 6000000, duration: 75, total_return: 500000000 },
   ]
 };
 
@@ -335,14 +335,15 @@ app.post('/api/lottery/spin', auth, (req, res) => {
 
   // Prize pool (weighted random)
   const prizes = [
+    { amount: 500, label: '500 UGX', weight: 40 },
     { amount: 1000, label: '1,000 UGX', weight: 30 },
-    { amount: 2500, label: '2,500 UGX', weight: 25 },
-    { amount: 5000, label: '5,000 UGX', weight: 20 },
-    { amount: 10000, label: '10,000 UGX', weight: 12 },
-    { amount: 25000, label: '25,000 UGX', weight: 8 },
-    { amount: 50000, label: '50,000 UGX', weight: 3 },
-    { amount: 100000, label: '100,000 UGX', weight: 1.5 },
-    { amount: 500000, label: '500,000 UGX', weight: 0.5 },
+    { amount: 2500, label: '2,500 UGX', weight: 15 },
+    { amount: 5000, label: '5,000 UGX', weight: 8 },
+    { amount: 10000, label: '10,000 UGX', weight: 4 },
+    { amount: 25000, label: '25,000 UGX', weight: 1.5 },
+    { amount: 50000, label: '50,000 UGX', weight: 0.8 },
+    { amount: 100000, label: '100,000 UGX', weight: 0.15 },
+    { amount: 500000, label: '500,000 UGX', weight: 0.05 },
   ];
 
   const totalWeight = prizes.reduce((s, p) => s + p.weight, 0);
