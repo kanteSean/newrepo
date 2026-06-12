@@ -240,6 +240,13 @@ app.post('/api/buy', auth, (req, res) => {
 
   const db = getDB();
   const user = db.users.find(u => u.id === req.userId);
+
+  // Limit: max 2 purchases per product, except products costing 50k+ (no limit)
+  if (product.price < 50000) {
+    const existing = db.orders.filter(o => o.user_id === req.userId && o.product_id === product.id);
+    if (existing.length >= 2) return res.json({ success: false, msg: `You can only buy ${product.name} a maximum of 2 times.` });
+  }
+
   if (user.wallet < product.price) return res.json({ success: false, msg: 'Insufficient wallet balance. Deposit first.' });
 
   user.wallet -= product.price;
