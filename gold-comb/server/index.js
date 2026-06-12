@@ -12,7 +12,10 @@ app.use(express.static(path.join(__dirname, '../public')));
 
 const JWT_SECRET = 'goldcomb_secret_key_2026';
 const DEPOSIT_NUMBER = '0754235466';
-const DB_FILE = path.join(__dirname, '../data.json');
+// Use persistent volume path if available (Railway), otherwise local
+const DB_FILE = process.env.RAILWAY_VOLUME_MOUNT_PATH
+  ? path.join(process.env.RAILWAY_VOLUME_MOUNT_PATH, 'data.json')
+  : path.join(__dirname, '../data.json');
 
 // Simple JSON file database
 function loadDB() {
