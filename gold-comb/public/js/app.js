@@ -55,7 +55,7 @@
     if (tab) tab.classList.add('active');
 
     const tabBar = document.querySelector('.tab-bar');
-    const subPages = ['product-detail', 'deposit', 'withdraw'];
+    const subPages = ['product-detail', 'deposit', 'withdraw', 'invite', 'lottery'];
     if (tabBar) tabBar.style.display = subPages.includes(page) ? 'none' : 'flex';
 
     switch(page) {
@@ -66,6 +66,8 @@
       case 'product-detail': renderProductDetail(data); break;
       case 'deposit': renderDeposit(data); break;
       case 'withdraw': renderWithdraw(); break;
+      case 'invite': renderInvite(); break;
+      case 'lottery': renderLottery(); break;
     }
   }
 
@@ -100,7 +102,8 @@
     if (pwd.length < 6) return toast('Password must be at least 6 characters');
 
     const url = mode === 'login' ? '/api/login' : '/api/register';
-    const res = await api('POST', url, { phone, password: pwd, name });
+    const ref_code = new URLSearchParams(window.location.search).get('ref') || undefined;
+    const res = await api('POST', url, { phone, password: pwd, name, ref_code });
 
     if (res.success) {
       state.token = res.token;
@@ -123,6 +126,8 @@
       <div id="page-product-detail" class="page"></div>
       <div id="page-deposit" class="page"></div>
       <div id="page-withdraw" class="page"></div>
+      <div id="page-invite" class="page"></div>
+      <div id="page-lottery" class="page"></div>
       <div class="tab-bar">
         <div class="tab-item active" data-tab="home" onclick="navigate('home')">
           ${ICONS.home}<span>Home</span>
@@ -471,6 +476,19 @@
           <div class="action-btn withdraw" onclick="navigate('withdraw')">Withdraw</div>
         </div>
 
+        <!-- Invite & Lottery buttons -->
+        <div class="action-buttons" style="margin-top: 0;">
+          <div class="action-btn" style="background: linear-gradient(135deg, #6c5ce7, #a29bfe); color: #fff;" onclick="navigate('invite')">Invite Friends</div>
+          <div class="action-btn" style="background: linear-gradient(135deg, #e17055, #fab1a0); color: #fff;" onclick="navigate('lottery')">Lottery 🎰</div>
+        </div>
+
+        <div style="padding: 0 20px; margin-top: 15px;">
+          <div style="display: flex; justify-content: space-between; padding: 14px; background: rgba(108,92,231,0.1); border-radius: 12px; border: 1px solid rgba(108,92,231,0.2); margin-bottom: 12px;">
+            <div><div style="font-size: 11px; color: var(--text-secondary);">Referral Earnings</div><div style="font-size: 16px; font-weight: 700; color: #a29bfe; margin-top: 3px;">${fmt(u.referral_earnings || 0)} UGX</div></div>
+            <div><div style="font-size: 11px; color: var(--text-secondary);">Lottery Spins</div><div style="font-size: 16px; font-weight: 700; color: #fab1a0; margin-top: 3px;">${u.lottery_spins || 0}</div></div>
+          </div>
+        </div>
+
         <div style="padding: 0 20px;">
           <h3 style="font-size: 16px; margin-bottom: 12px;">Recent Transactions</h3>
           ${txns.length === 0 ? '<p style="font-size: 13px; color: var(--text-secondary);">No transactions yet.</p>' :
@@ -492,6 +510,134 @@
       </div>
     `;
   }
+
+  // Invite page
+  async function renderInvite() {
+    const res = await api('GET', '/api/referrals');
+    const data = res.success ? res : { invite_code: '', referral_count: 0, members: [], lottery_spins: 0 };
+    const inviteLink = window.location.origin + '?ref=' + data.invite_code;
+
+    document.getElementById('page-invite').innerHTML = `
+      <div class="page-header">
+        <div class="back" onclick="navigate('profile')">${ICONS.arrow}</div>
+        <div class="title">Invite Friends</div>
+        <div style="width:32px"></div>
+      </div>
+      <div class="fade-in" style="padding: 20px;">
+        <div style="text-align: center; padding: 20px; background: linear-gradient(135deg, rgba(108,92,231,0.1), transparent); border-radius: var(--radius); border: 1px solid rgba(108,92,231,0.2); margin-bottom: 20px;">
+          <div style="font-size: 40px; margin-bottom: 10px;">🎁</div>
+          <h3 style="font-size: 18px; margin-bottom: 8px;">Earn Daily Rewards!</h3>
+          <p style="font-size: 13px; color: var(--text-secondary); line-height: 1.5;">Invite friends and earn <strong style="color: var(--gold);">5% daily</strong> of their investment profits directly to your balance. Plus get a <strong style="color: #fab1a0;">free lottery spin</strong> for each invite!</p>
+        </div>
+
+        <div class="deposit-box" style="background: linear-gradient(135deg, rgba(108,92,231,0.08), transparent); border-color: rgba(108,92,231,0.2);">
+          <h3 style="color: #a29bfe;">Your Invite Link</h3>
+          <div style="background: rgba(0,0,0,0.3); padding: 12px; border-radius: 8px; word-break: break-all; font-size: 13px; margin-bottom: 12px;">${inviteLink}</div>
+          <button class="btn btn-gold" onclick="copyText('${inviteLink}')">Copy Invite Link</button>
+          <div style="margin-top: 10px; text-align: center; font-size: 12px; color: var(--text-secondary);">Code: <strong style="color: #a29bfe;">${data.invite_code}</strong></div>
+        </div>
+
+        <div style="display: flex; gap: 12px; margin: 20px 0;">
+          <div style="flex: 1; padding: 14px; background: var(--bg-card); border-radius: 12px; text-align: center;">
+            <div style="font-size: 22px; font-weight: 700; color: #a29bfe;">${data.referral_count}</div>
+            <div style="font-size: 11px; color: var(--text-secondary); margin-top: 3px;">Friends Invited</div>
+          </div>
+          <div style="flex: 1; padding: 14px; background: var(--bg-card); border-radius: 12px; text-align: center;">
+            <div style="font-size: 22px; font-weight: 700; color: #fab1a0;">${data.lottery_spins}</div>
+            <div style="font-size: 11px; color: var(--text-secondary); margin-top: 3px;">Lottery Spins</div>
+          </div>
+        </div>
+
+        <button class="btn btn-gold" onclick="claimReferralReward()">Claim Daily Referral Reward</button>
+
+        ${data.members.length > 0 ? `
+          <h3 style="font-size: 15px; margin: 20px 0 12px;">Your Team</h3>
+          ${data.members.map(m => `
+            <div style="display: flex; justify-content: space-between; padding: 12px; background: var(--bg-card); border-radius: 10px; margin-bottom: 8px;">
+              <div>
+                <div style="font-size: 14px; font-weight: 500;">${m.name}</div>
+                <div style="font-size: 11px; color: var(--text-secondary);">${m.phone}</div>
+              </div>
+              <div style="font-size: 12px; color: var(--success);">${m.active_orders} orders</div>
+            </div>
+          `).join('')}
+        ` : '<div class="empty-state"><p>No team members yet. Share your link!</p></div>'}
+      </div>
+    `;
+  }
+
+  window.claimReferralReward = async function() {
+    const res = await api('POST', '/api/claim-referral-reward');
+    if (res.success) {
+      toast(res.msg);
+      renderInvite();
+    } else {
+      toast(res.msg || 'Cannot claim yet');
+    }
+  };
+
+  // Lottery page
+  async function renderLottery() {
+    const res = await api('GET', '/api/me');
+    if (res.success) state.user = res.user;
+    const spins = state.user?.lottery_spins || 0;
+
+    document.getElementById('page-lottery').innerHTML = `
+      <div class="page-header">
+        <div class="back" onclick="navigate('profile')">${ICONS.arrow}</div>
+        <div class="title">Lucky Lottery</div>
+        <div style="width:32px"></div>
+      </div>
+      <div class="fade-in" style="padding: 20px; text-align: center;">
+        <div style="font-size: 60px; margin: 20px 0;">🎰</div>
+        <h2 style="font-size: 22px; margin-bottom: 8px;">Lucky Gold Spin</h2>
+        <p style="font-size: 13px; color: var(--text-secondary); margin-bottom: 25px;">Spin the wheel for a chance to win up to <strong style="color: var(--gold);">500,000 UGX!</strong></p>
+
+        <div style="padding: 20px; background: linear-gradient(135deg, rgba(225,112,85,0.1), transparent); border-radius: var(--radius); border: 1px solid rgba(225,112,85,0.2); margin-bottom: 20px;">
+          <div style="font-size: 14px; color: var(--text-secondary);">Available Spins</div>
+          <div style="font-size: 36px; font-weight: 700; color: #fab1a0; margin-top: 6px;">${spins}</div>
+        </div>
+
+        <button class="btn btn-gold" style="font-size: 18px; padding: 18px;" onclick="spinLottery()" ${spins === 0 ? 'disabled style="opacity: 0.5; font-size: 18px; padding: 18px;"' : ''}>🎰 SPIN NOW!</button>
+
+        ${spins === 0 ? '<p style="font-size: 13px; color: var(--text-secondary); margin-top: 15px;">Invite a friend to earn a free spin!</p>' : ''}
+
+        <div id="lottery-result" style="margin-top: 20px;"></div>
+
+        <div style="margin-top: 30px; text-align: left;">
+          <h3 style="font-size: 15px; margin-bottom: 12px;">Prize Table</h3>
+          <div style="font-size: 12px; color: var(--text-secondary);">
+            <div style="display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid rgba(255,255,255,0.05);"><span>1,000 UGX</span><span>30%</span></div>
+            <div style="display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid rgba(255,255,255,0.05);"><span>2,500 UGX</span><span>25%</span></div>
+            <div style="display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid rgba(255,255,255,0.05);"><span>5,000 UGX</span><span>20%</span></div>
+            <div style="display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid rgba(255,255,255,0.05);"><span>10,000 UGX</span><span>12%</span></div>
+            <div style="display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid rgba(255,255,255,0.05);"><span>25,000 UGX</span><span>8%</span></div>
+            <div style="display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid rgba(255,255,255,0.05);"><span>50,000 UGX</span><span>3%</span></div>
+            <div style="display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid rgba(255,255,255,0.05);"><span>100,000 UGX</span><span>1.5%</span></div>
+            <div style="display: flex; justify-content: space-between; padding: 8px 0; color: var(--gold);"><span>500,000 UGX</span><span>0.5%</span></div>
+          </div>
+        </div>
+      </div>
+    `;
+  }
+
+  window.spinLottery = async function() {
+    const res = await api('POST', '/api/lottery/spin');
+    if (res.success) {
+      const resultEl = document.getElementById('lottery-result');
+      resultEl.innerHTML = `
+        <div style="padding: 20px; background: linear-gradient(135deg, rgba(212,168,67,0.2), rgba(184,134,11,0.1)); border-radius: var(--radius); border: 2px solid var(--gold); animation: fadeIn 0.5s ease;">
+          <div style="font-size: 30px;">🎉</div>
+          <div style="font-size: 20px; font-weight: 700; color: var(--gold); margin-top: 8px;">You won ${fmt(res.amount)} UGX!</div>
+          <div style="font-size: 13px; color: var(--text-secondary); margin-top: 6px;">Added to your balance. Spins left: ${res.spins_left}</div>
+        </div>
+      `;
+      toast('🎉 ' + res.msg);
+      setTimeout(() => renderLottery(), 3000);
+    } else {
+      toast(res.msg || 'No spins available');
+    }
+  };
 
   // Withdraw
   function renderWithdraw() {

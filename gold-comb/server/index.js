@@ -19,7 +19,11 @@ function loadDB() {
   try {
     if (fs.existsSync(DB_FILE)) return JSON.parse(fs.readFileSync(DB_FILE, 'utf8'));
   } catch (e) {}
-  return { users: [], orders: [], transactions: [], nextId: 1 };
+  return { users: [], orders: [], transactions: [], referrals: [], lottery_spins: [], nextId: 1 };
+}
+
+function genInviteCode() {
+  return 'GC' + Math.random().toString(36).substring(2, 8).toUpperCase();
 }
 
 function saveDB(db) {
@@ -77,7 +81,20 @@ app.post('/api/register', (req, res) => {
 
   const id = db.nextId++;
   const hash = bcrypt.hashSync(password, 10);
-  const user = { id, phone, password: hash, name: name || 'User', wallet: 0, balance: 0, created_at: new Date().toISOString() };
+  const invite_code = genInviteCode();
+  const user = { id, phone, password: hash, name: name || 'User', wallet: 0, balance: 0, invite_code, referred_by: null, referral_earnings: 0, lottery_spins: 0, created_at: new Date().toISOString() };
+
+  // Check if registered via referral
+  const { ref_code } = req.body;
+  if (ref_code) {
+    const referrer = db.users.find(u => u.invite_code === ref_code);
+    if (referrer && referrer.id !== id) {
+      user.referred_by = referrer.id;
+      referrer.lottery_spins = (referrer.lottery_spins || 0) + 1;
+      db.referrals.push({ id: db.nextId++, referrer_id: referrer.id, referred_id: id, created_at: new Date().toISOString() });
+    }
+  }
+
   db.users.push(user);
   saveDB(db);
 
@@ -130,7 +147,21 @@ app.get('/api/me', auth, (req, res) => {
 
   if (changed) saveDB(db);
 
-  res.json({ success: true, user: { id: user.id, phone: user.phone, name: user.name, wallet: user.wallet, balance: user.balance, created_at: user.created_at }, daily_earning: totalDailyEarning });
+  // Calculate referral daily bonus (5% of each referral's daily earning)
+  const referrals = db.referrals ? db.referrals.filter(r => r.referrer_id === req.userId) : [];
+  let referralBonus = 0;
+  for (const ref of referrals) {
+    const refOrders = db.orders.filter(o => o.user_id === ref.referred_id && o.status === 'active');
+    for (const o of refOrders) { referralBonus += Math.floor(o.daily_profit * 0.05); }
+  }
+
+  res.json({
+    success: true,
+    user: { id: user.id, phone: user.phone, name: user.name, wallet: user.wallet, balance: user.balance, invite_code: user.invite_code, referral_earnings: user.referral_earnings || 0, lottery_spins: user.lottery_spins || 0, created_at: user.created_at },
+    daily_earning: totalDailyEarning,
+    referral_bonus: referralBonus,
+    referral_count: referrals.length
+  });
 });
 
 // Products
@@ -250,6 +281,86 @@ app.post('/api/withdraw', auth, (req, res) => {
   saveDB(db);
 
   res.json({ success: true, msg: 'Withdrawal submitted. Processing within 24 hours.' });
+});
+
+// Referral / Invite
+app.get('/api/referrals', auth, (req, res) => {
+  const db = getDB();
+  const user = db.users.find(u => u.id === req.userId);
+  const referrals = (db.referrals || []).filter(r => r.referrer_id === req.userId);
+  const members = referrals.map(r => {
+    const member = db.users.find(u => u.id === r.referred_id);
+    if (!member) return null;
+    const activeOrders = db.orders.filter(o => o.user_id === member.id && o.status === 'active').length;
+    return { name: member.name, phone: member.phone.slice(0, 4) + '****' + member.phone.slice(-2), joined: r.created_at, active_orders: activeOrders };
+  }).filter(Boolean);
+
+  res.json({ success: true, invite_code: user.invite_code, referral_count: referrals.length, members, lottery_spins: user.lottery_spins || 0 });
+});
+
+// Claim referral daily reward
+app.post('/api/claim-referral-reward', auth, (req, res) => {
+  const db = getDB();
+  const user = db.users.find(u => u.id === req.userId);
+  const referrals = (db.referrals || []).filter(r => r.referrer_id === req.userId);
+
+  // Check last claim time
+  const lastClaim = user.last_referral_claim || '2000-01-01';
+  const today = new Date().toISOString().split('T')[0];
+  if (lastClaim === today) return res.json({ success: false, msg: 'Already claimed today. Come back tomorrow!' });
+
+  // Calculate bonus: 5% of each referral's active daily profits
+  let bonus = 0;
+  for (const ref of referrals) {
+    const refOrders = db.orders.filter(o => o.user_id === ref.referred_id && o.status === 'active');
+    for (const o of refOrders) { bonus += Math.floor(o.daily_profit * 0.05); }
+  }
+
+  if (bonus === 0) return res.json({ success: false, msg: 'No active referral earnings to claim. Invite friends who invest!' });
+
+  user.balance += bonus;
+  user.referral_earnings = (user.referral_earnings || 0) + bonus;
+  user.last_referral_claim = today;
+  db.transactions.push({ id: db.nextId++, user_id: req.userId, type: 'referral_reward', amount: bonus, description: `Daily referral bonus (${referrals.length} members)`, created_at: new Date().toISOString() });
+  saveDB(db);
+
+  res.json({ success: true, msg: `${bonus.toLocaleString()} UGX referral reward added to balance!`, bonus, balance: user.balance });
+});
+
+// Lottery
+app.post('/api/lottery/spin', auth, (req, res) => {
+  const db = getDB();
+  const user = db.users.find(u => u.id === req.userId);
+  if ((user.lottery_spins || 0) <= 0) return res.json({ success: false, msg: 'No spins available. Invite a friend to earn a spin!' });
+
+  // Prize pool (weighted random)
+  const prizes = [
+    { amount: 1000, label: '1,000 UGX', weight: 30 },
+    { amount: 2500, label: '2,500 UGX', weight: 25 },
+    { amount: 5000, label: '5,000 UGX', weight: 20 },
+    { amount: 10000, label: '10,000 UGX', weight: 12 },
+    { amount: 25000, label: '25,000 UGX', weight: 8 },
+    { amount: 50000, label: '50,000 UGX', weight: 3 },
+    { amount: 100000, label: '100,000 UGX', weight: 1.5 },
+    { amount: 500000, label: '500,000 UGX', weight: 0.5 },
+  ];
+
+  const totalWeight = prizes.reduce((s, p) => s + p.weight, 0);
+  let rand = Math.random() * totalWeight;
+  let prize = prizes[0];
+  for (const p of prizes) {
+    rand -= p.weight;
+    if (rand <= 0) { prize = p; break; }
+  }
+
+  user.lottery_spins--;
+  user.balance += prize.amount;
+  db.transactions.push({ id: db.nextId++, user_id: req.userId, type: 'lottery', amount: prize.amount, description: `Lottery win: ${prize.label}`, created_at: new Date().toISOString() });
+  if (!db.lottery_spins) db.lottery_spins = [];
+  db.lottery_spins.push({ id: db.nextId++, user_id: req.userId, amount: prize.amount, created_at: new Date().toISOString() });
+  saveDB(db);
+
+  res.json({ success: true, msg: `You won ${prize.label}!`, amount: prize.amount, balance: user.balance, spins_left: user.lottery_spins });
 });
 
 // Transactions
