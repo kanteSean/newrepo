@@ -371,6 +371,67 @@ app.get('/api/transactions', auth, (req, res) => {
   res.json({ success: true, transactions: txns });
 });
 
+// Admin dashboard
+const ADMIN_KEY = 'goldcomb_admin_2026';
+
+function adminAuth(req, res, next) {
+  const key = req.headers['x-admin-key'] || req.query.key;
+  if (key !== ADMIN_KEY) return res.status(403).json({ success: false, msg: 'Unauthorized' });
+  next();
+}
+
+app.get('/api/admin/stats', adminAuth, (req, res) => {
+  const db = getDB();
+  const totalUsers = db.users.length;
+  const totalOrders = db.orders.length;
+  const activeOrders = db.orders.filter(o => o.status === 'active').length;
+  const harvestOrders = db.orders.filter(o => o.status === 'harvest').length;
+  const completedOrders = db.orders.filter(o => o.status === 'completed').length;
+  const totalDeposited = db.transactions.filter(t => t.type === 'deposit').reduce((s, t) => s + t.amount, 0);
+  const totalWithdrawn = db.transactions.filter(t => t.type === 'withdraw').reduce((s, t) => s + Math.abs(t.amount), 0);
+  const totalReferrals = (db.referrals || []).length;
+  res.json({ success: true, stats: { totalUsers, totalOrders, activeOrders, harvestOrders, completedOrders, totalDeposited, totalWithdrawn, totalReferrals } });
+});
+
+app.get('/api/admin/users', adminAuth, (req, res) => {
+  const db = getDB();
+  const users = db.users.map(u => ({
+    id: u.id, phone: u.phone, name: u.name, wallet: u.wallet, balance: u.balance,
+    invite_code: u.invite_code, referral_earnings: u.referral_earnings || 0,
+    lottery_spins: u.lottery_spins || 0, created_at: u.created_at,
+    orders: db.orders.filter(o => o.user_id === u.id).length,
+    total_deposited: db.transactions.filter(t => t.user_id === u.id && t.type === 'deposit').reduce((s, t) => s + t.amount, 0)
+  }));
+  res.json({ success: true, users });
+});
+
+app.get('/api/admin/transactions', adminAuth, (req, res) => {
+  const db = getDB();
+  const txns = db.transactions.map(t => {
+    const user = db.users.find(u => u.id === t.user_id);
+    return { ...t, user_name: user ? user.name : 'Unknown', user_phone: user ? user.phone : '' };
+  }).sort((a, b) => new Date(b.created_at) - new Date(a.created_at)).slice(0, 200);
+  res.json({ success: true, transactions: txns });
+});
+
+app.get('/api/admin/orders', adminAuth, (req, res) => {
+  const db = getDB();
+  const now = Date.now();
+  const orders = db.orders.map(o => {
+    const user = db.users.find(u => u.id === o.user_id);
+    const startMs = new Date(o.start_date).getTime();
+    const daysPassed = Math.min(Math.floor((now - startMs) / 86400000), o.duration_days);
+    const progress = Math.min((daysPassed / o.duration_days) * 100, 100);
+    return { ...o, user_name: user ? user.name : 'Unknown', user_phone: user ? user.phone : '', days_passed: daysPassed, progress };
+  }).sort((a, b) => new Date(b.start_date) - new Date(a.start_date));
+  res.json({ success: true, orders });
+});
+
+// Serve admin page
+app.get('/admin', (req, res) => {
+  res.sendFile(path.join(__dirname, '../public/admin.html'));
+});
+
 // Catch-all SPA
 app.get('*', (req, res) => {
   res.sendFile(path.join(__dirname, '../public/index.html'));
