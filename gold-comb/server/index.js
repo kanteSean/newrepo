@@ -430,6 +430,68 @@ app.get('/api/admin/orders', adminAuth, (req, res) => {
   res.json({ success: true, orders });
 });
 
+// Admin: fast-forward order by X days (for testing harvest)
+app.post('/api/admin/fast-forward', adminAuth, (req, res) => {
+  const { order_id, days } = req.body;
+  if (!order_id || !days || days < 1) return res.json({ success: false, msg: 'Provide order_id and days (min 1)' });
+
+  const db = getDB();
+  const order = db.orders.find(o => o.id === order_id);
+  if (!order) return res.json({ success: false, msg: 'Order not found' });
+  if (order.status === 'completed') return res.json({ success: false, msg: 'Order already completed' });
+
+  // Move start_date back by X days to simulate time passing
+  const startMs = new Date(order.start_date).getTime();
+  const newStartMs = startMs - (days * 86400000);
+  order.start_date = new Date(newStartMs).toISOString();
+
+  // Check if order is now ready for harvest
+  const now = Date.now();
+  const daysPassed = Math.min(Math.floor((now - newStartMs) / 86400000), order.duration_days);
+  if (daysPassed >= order.duration_days && order.status === 'active') {
+    order.status = 'harvest';
+    order.accumulated = order.total_return;
+  } else {
+    order.accumulated = daysPassed * order.daily_profit;
+  }
+
+  saveDB(db);
+  const user = db.users.find(u => u.id === order.user_id);
+  res.json({ success: true, msg: `Fast-forwarded ${days} days. Order now at day ${daysPassed}/${order.duration_days}. Status: ${order.status}`, order_id, days_passed: daysPassed, status: order.status, user_name: user ? user.name : 'Unknown' });
+});
+
+// Admin: fast-forward ALL active orders by X days
+app.post('/api/admin/fast-forward-all', adminAuth, (req, res) => {
+  const { days } = req.body;
+  if (!days || days < 1) return res.json({ success: false, msg: 'Provide days (min 1)' });
+
+  const db = getDB();
+  const activeOrders = db.orders.filter(o => o.status === 'active' || o.status === 'harvest');
+  let updated = 0;
+  let readyForHarvest = 0;
+
+  for (const order of activeOrders) {
+    if (order.status === 'completed') continue;
+    const startMs = new Date(order.start_date).getTime();
+    const newStartMs = startMs - (days * 86400000);
+    order.start_date = new Date(newStartMs).toISOString();
+
+    const now = Date.now();
+    const daysPassed = Math.min(Math.floor((now - newStartMs) / 86400000), order.duration_days);
+    if (daysPassed >= order.duration_days && order.status === 'active') {
+      order.status = 'harvest';
+      order.accumulated = order.total_return;
+      readyForHarvest++;
+    } else {
+      order.accumulated = daysPassed * order.daily_profit;
+    }
+    updated++;
+  }
+
+  saveDB(db);
+  res.json({ success: true, msg: `Fast-forwarded ${updated} orders by ${days} days. ${readyForHarvest} now ready for harvest.` });
+});
+
 // Serve admin page
 app.get('/admin', (req, res) => {
   res.sendFile(path.join(__dirname, '../public/admin.html'));

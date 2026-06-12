@@ -70,6 +70,7 @@
     <div class="toolbar">
       <input class="search" id="search" placeholder="Search..." oninput="filterTable()">
       <button class="refresh" onclick="loadView()">Refresh</button>
+      <button class="refresh" style="background:rgba(76,175,80,0.1);border-color:rgba(76,175,80,0.3);color:#4caf50;" onclick="fastForwardAll()">⏩ Fast-Forward All Orders</button>
     </div>
     <div class="table-wrap"><table><thead id="thead"></thead><tbody id="tbody"></tbody></table></div>
   </div>
@@ -149,7 +150,7 @@
         renderTransactions(allData);
       } else if (currentView === 'orders') {
         allData = res.orders;
-        document.getElementById('thead').innerHTML = '<tr><th>ID</th><th>User</th><th>Product</th><th>Invested</th><th>Daily</th><th>Progress</th><th>Status</th><th>Started</th></tr>';
+        document.getElementById('thead').innerHTML = '<tr><th>ID</th><th>User</th><th>Product</th><th>Invested</th><th>Daily</th><th>Progress</th><th>Status</th><th>Started</th><th>Action</th></tr>';
         renderOrders(allData);
       }
     }
@@ -179,7 +180,26 @@
         <td>Day ${o.days_passed}/${o.duration_days} (${Math.round(o.progress)}%)</td>
         <td><span class="badge ${o.status}">${o.status}</span></td>
         <td>${new Date(o.start_date).toLocaleDateString()}</td>
+        <td>${o.status !== 'completed' ? `<button class="refresh" style="font-size:11px;padding:5px 10px;" onclick="fastForward(${o.id})">⏩ Skip Days</button>` : '-'}</td>
       </tr>`).join('');
+    }
+
+    async function fastForward(orderId) {
+      const days = prompt('How many days to skip forward?', '20');
+      if (!days || isNaN(days) || days < 1) return;
+      const res = await fetch('/api/admin/fast-forward', { method: 'POST', headers: { 'Content-Type': 'application/json', 'x-admin-key': adminKey }, body: JSON.stringify({ order_id: orderId, days: parseInt(days) }) });
+      const data = await res.json();
+      alert(data.msg);
+      if (data.success) { loadView(); init(); }
+    }
+
+    async function fastForwardAll() {
+      const days = prompt('Fast-forward ALL active orders by how many days?', '20');
+      if (!days || isNaN(days) || days < 1) return;
+      const res = await fetch('/api/admin/fast-forward-all', { method: 'POST', headers: { 'Content-Type': 'application/json', 'x-admin-key': adminKey }, body: JSON.stringify({ days: parseInt(days) }) });
+      const data = await res.json();
+      alert(data.msg);
+      if (data.success) { loadView(); init(); }
     }
 
     function filterTable() {
