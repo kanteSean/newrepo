@@ -30,7 +30,11 @@ function genInviteCode() {
 }
 
 function saveDB(db) {
-  fs.writeFileSync(DB_FILE, JSON.stringify(db, null, 2));
+  try {
+    fs.writeFileSync(DB_FILE, JSON.stringify(db, null, 2));
+  } catch (err) {
+    console.warn('File write skipped on serverless platform:', err.message);
+  }
 }
 
 // Seed dummy user on first run
