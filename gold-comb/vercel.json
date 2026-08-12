@@ -2,14 +2,14 @@
   "version": 2,
   "builds": [
     {
-      "src": "gold-comb/server/index.js",
+      "src": "server/index.js",
       "use": "@vercel/node"
     }
   ],
   "routes": [
     {
       "src": "/(.*)",
-      "dest": "gold-comb/server/index.js"
+      "dest": "server/index.js"
     }
   ]
 }
