@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Gold Comb - Admin Dashboard</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { background: #0f0f1a; color: #fff; font-family: 'Segoe UI', sans-serif; }
+    .login-wrap { min-height: 100vh; display: flex; align-items: center; justify-content: center; }
+    .login-box { padding: 40px; background: #1a1a2e; border-radius: 16px; border: 1px solid rgba(212,168,67,0.2); max-width: 360px; width: 90%; }
+    .login-box h2 { color: #d4a843; margin-bottom: 20px; text-align: center; }
+    .login-box input { width: 100%; padding: 12px; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.15); border-radius: 10px; color: #fff; font-size: 15px; outline: none; margin-bottom: 14px; }
+    .login-box input:focus { border-color: #d4a843; }
+    .login-box button { width: 100%; padding: 13px; background: linear-gradient(135deg, #d4a843, #b8860b); border: none; border-radius: 10px; color: #000; font-size: 15px; font-weight: 600; cursor: pointer; }
+    #dashboard { display: none; max-width: 1100px; margin: 0 auto; padding: 20px; }
+    .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px; padding-bottom: 15px; border-bottom: 1px solid rgba(255,255,255,0.08); }
+    .header h1 { font-size: 22px; color: #d4a843; }
+    .header .logout { padding: 8px 16px; border: 1px solid rgba(255,255,255,0.2); border-radius: 8px; background: none; color: #fff; cursor: pointer; font-size: 13px; }
+    .stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 12px; margin-bottom: 25px; }
+    .stat { padding: 16px; background: #1a1a2e; border-radius: 12px; border: 1px solid rgba(255,255,255,0.06); }
+    .stat .label { font-size: 11px; color: rgba(255,255,255,0.5); text-transform: uppercase; letter-spacing: 0.5px; }
+    .stat .val { font-size: 20px; font-weight: 700; margin-top: 6px; }
+    .stat .val.gold { color: #d4a843; }
+    .stat .val.green { color: #4caf50; }
+    .stat .val.red { color: #f44336; }
+    .tabs { display: flex; gap: 8px; margin-bottom: 16px; }
+    .tab { padding: 10px 18px; border-radius: 8px; background: rgba(255,255,255,0.05); color: rgba(255,255,255,0.6); cursor: pointer; font-size: 13px; font-weight: 500; border: 1px solid transparent; }
+    .tab.active { color: #d4a843; border-color: rgba(212,168,67,0.3); background: rgba(212,168,67,0.08); }
+    .table-wrap { overflow-x: auto; }
+    table { width: 100%; border-collapse: collapse; font-size: 13px; }
+    th { text-align: left; padding: 10px 12px; color: rgba(255,255,255,0.5); font-weight: 500; border-bottom: 1px solid rgba(255,255,255,0.08); font-size: 11px; text-transform: uppercase; }
+    td { padding: 10px 12px; border-bottom: 1px solid rgba(255,255,255,0.04); }
+    tr:hover td { background: rgba(212,168,67,0.03); }
+    .badge { padding: 3px 8px; border-radius: 6px; font-size: 11px; font-weight: 600; }
+    .badge.active { background: rgba(212,168,67,0.15); color: #d4a843; }
+    .badge.harvest { background: rgba(76,175,80,0.15); color: #4caf50; }
+    .badge.completed { background: rgba(255,255,255,0.08); color: rgba(255,255,255,0.5); }
+    .badge.deposit { background: rgba(76,175,80,0.15); color: #4caf50; }
+    .badge.purchase { background: rgba(212,168,67,0.15); color: #d4a843; }
+    .badge.withdraw { background: rgba(244,67,54,0.15); color: #f44336; }
+    .badge.lottery { background: rgba(250,177,160,0.15); color: #fab1a0; }
+    .badge.referral_reward { background: rgba(162,155,254,0.15); color: #a29bfe; }
+    .refresh { padding: 8px 14px; background: rgba(212,168,67,0.1); border: 1px solid rgba(212,168,67,0.3); border-radius: 8px; color: #d4a843; cursor: pointer; font-size: 12px; }
+    .search { padding: 8px 14px; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); border-radius: 8px; color: #fff; outline: none; font-size: 13px; width: 200px; }
+    .search:focus { border-color: #d4a843; }
+    .toolbar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; gap: 10px; flex-wrap: wrap; }
+  </style>
+</head>
+<body>
+  <div class="login-wrap" id="login-wrap">
+    <div class="login-box">
+      <h2>Admin Login</h2>
+      <input type="password" id="admin-key" placeholder="Enter admin key">
+      <button onclick="adminLogin()">Access Dashboard</button>
+    </div>
+  </div>
+
+  <div id="dashboard">
+    <div class="header">
+      <h1>Gold Comb Admin</h1>
+      <button class="logout" onclick="adminLogout()">Logout</button>
+    </div>
+    <div class="stats" id="stats"></div>
+    <div class="tabs">
+      <div class="tab active" data-view="users" onclick="switchView('users')">Users</div>
+      <div class="tab" data-view="transactions" onclick="switchView('transactions')">Transactions</div>
+      <div class="tab" data-view="orders" onclick="switchView('orders')">Orders</div>
+    </div>
+    <div class="toolbar">
+      <input class="search" id="search" placeholder="Search..." oninput="filterTable()">
+      <button class="refresh" onclick="loadView()">Refresh</button>
+    </div>
+    <div class="table-wrap"><table><thead id="thead"></thead><tbody id="tbody"></tbody></table></div>
+  </div>
+
+  <script>
+    let adminKey = localStorage.getItem('gc_admin_key');
+    let currentView = 'users';
+    let allData = [];
+
+    function fmt(n) { return Number(n || 0).toLocaleString(); }
+
+    async function api(url) {
+      const res = await fetch(url, { headers: { 'x-admin-key': adminKey } });
+      return res.json();
+    }
+
+    function adminLogin() {
+      adminKey = document.getElementById('admin-key').value.trim();
+      if (!adminKey) return;
+      localStorage.setItem('gc_admin_key', adminKey);
+      init();
+    }
+
+    function adminLogout() {
+      localStorage.removeItem('gc_admin_key');
+      adminKey = null;
+      document.getElementById('dashboard').style.display = 'none';
+      document.getElementById('login-wrap').style.display = 'flex';
+    }
+
+    async function init() {
+      const res = await api('/api/admin/stats');
+      if (!res.success) {
+        localStorage.removeItem('gc_admin_key');
+        adminKey = null;
+        alert('Invalid admin key');
+        document.getElementById('dashboard').style.display = 'none';
+        document.getElementById('login-wrap').style.display = 'flex';
+        return;
+      }
+      document.getElementById('login-wrap').style.display = 'none';
+      document.getElementById('dashboard').style.display = 'block';
+
+      const s = res.stats;
+      document.getElementById('stats').innerHTML = `
+        <div class="stat"><div class="label">Total Users</div><div class="val gold">${s.totalUsers}</div></div>
+        <div class="stat"><div class="label">Total Orders</div><div class="val">${s.totalOrders}</div></div>
+        <div class="stat"><div class="label">Active Orders</div><div class="val gold">${s.activeOrders}</div></div>
+        <div class="stat"><div class="label">Ready to Harvest</div><div class="val green">${s.harvestOrders}</div></div>
+        <div class="stat"><div class="label">Completed</div><div class="val">${s.completedOrders}</div></div>
+        <div class="stat"><div class="label">Total Deposited</div><div class="val green">${fmt(s.totalDeposited)}</div></div>
+        <div class="stat"><div class="label">Total Withdrawn</div><div class="val red">${fmt(s.totalWithdrawn)}</div></div>
+        <div class="stat"><div class="label">Referrals</div><div class="val">${s.totalReferrals}</div></div>
+      `;
+      loadView();
+    }
+
+    function switchView(view) {
+      currentView = view;
+      document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+      document.querySelector(`[data-view="${view}"]`).classList.add('active');
+      document.getElementById('search').value = '';
+      loadView();
+    }
+
+    async function loadView() {
+      const res = await api('/api/admin/' + currentView);
+      if (!res.success) return;
+
+      if (currentView === 'users') {
+        allData = res.users;
+        document.getElementById('thead').innerHTML = '<tr><th>ID</th><th>Name</th><th>Phone</th><th>Wallet</th><th>Balance</th><th>Orders</th><th>Deposited</th><th>Invite Code</th><th>Joined</th></tr>';
+        renderUsers(allData);
+      } else if (currentView === 'transactions') {
+        allData = res.transactions;
+        document.getElementById('thead').innerHTML = '<tr><th>ID</th><th>User</th><th>Phone</th><th>Type</th><th>Amount</th><th>Description</th><th>Date</th></tr>';
+        renderTransactions(allData);
+      } else if (currentView === 'orders') {
+        allData = res.orders;
+        document.getElementById('thead').innerHTML = '<tr><th>ID</th><th>User</th><th>Product</th><th>Invested</th><th>Daily</th><th>Progress</th><th>Status</th><th>Started</th></tr>';
+        renderOrders(allData);
+      }
+    }
+
+    function renderUsers(data) {
+      document.getElementById('tbody').innerHTML = data.map(u => `<tr>
+        <td>${u.id}</td><td>${u.name}</td><td>${u.phone}</td>
+        <td style="color:#d4a843">${fmt(u.wallet)}</td><td style="color:#4caf50">${fmt(u.balance)}</td>
+        <td>${u.orders}</td><td>${fmt(u.total_deposited)}</td><td>${u.invite_code || '-'}</td>
+        <td>${new Date(u.created_at).toLocaleDateString()}</td>
+      </tr>`).join('');
+    }
+
+    function renderTransactions(data) {
+      document.getElementById('tbody').innerHTML = data.map(t => `<tr>
+        <td>${t.id}</td><td>${t.user_name}</td><td>${t.user_phone}</td>
+        <td><span class="badge ${t.type}">${t.type}</span></td>
+        <td style="color:${t.amount > 0 ? '#4caf50' : '#f44336'}">${t.amount > 0 ? '+' : ''}${fmt(t.amount)}</td>
+        <td>${t.description}</td><td>${new Date(t.created_at).toLocaleString()}</td>
+      </tr>`).join('');
+    }
+
+    function renderOrders(data) {
+      document.getElementById('tbody').innerHTML = data.map(o => `<tr>
+        <td>${o.id}</td><td>${o.user_name}</td><td>${o.product_name}</td>
+        <td>${fmt(o.amount)}</td><td style="color:#d4a843">${fmt(o.daily_profit)}/day</td>
+        <td>Day ${o.days_passed}/${o.duration_days} (${Math.round(o.progress)}%)</td>
+        <td><span class="badge ${o.status}">${o.status}</span></td>
+        <td>${new Date(o.start_date).toLocaleDateString()}</td>
+      </tr>`).join('');
+    }
+
+    function filterTable() {
+      const q = document.getElementById('search').value.toLowerCase();
+      const filtered = allData.filter(item => JSON.stringify(item).toLowerCase().includes(q));
+      if (currentView === 'users') renderUsers(filtered);
+      else if (currentView === 'transactions') renderTransactions(filtered);
+      else if (currentView === 'orders') renderOrders(filtered);
+    }
+
+    if (adminKey) init();
+  </script>
+</body>
+</html>
